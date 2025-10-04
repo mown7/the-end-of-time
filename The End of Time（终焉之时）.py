@@ -43,29 +43,66 @@ class MainProgramme:
         self.blink_cursor()
         self.draw_content()
 
+
+        self.go_on_button_start_x = self.root.winfo_screenwidth() - 200
+        self.go_on_button_start_y = self.root.winfo_screenheight() - 100
+        self.go_on_button_end_x = self.root.winfo_screenwidth()
+        self.go_on_button_end_y = self.root.winfo_screenheight()
+        self.go_on_text_x = self.root.winfo_screenwidth() - 100
+        self.go_on_text_y = self.root.winfo_screenheight() - 50
+
+
+        self.chapter_blank_w = self.root.winfo_screenwidth()
+        self.chapter_blank_h = self.root.winfo_screenheight() // 3 * 2
+        self.chapter_blank_hend = self.root.winfo_screenheight()
+
+
+        self.chapter_one_1_active = False
+        self.chapter_one_2_active = False
+        self.chapter_one_3_active = False
+        self.chapter_one_4_active = False
+
+
+        self.chapter_two_1_active = False
+
+
+        self.chapter_three_1_active = False
+
     
-    def typing(self, bool__, text = None, x = None, y = None, color = None):
-        if text is not None and bool__ == True:
+    def typing(self, tagger, text = None, x = None, y = None, color = None):
+        if text is not None :
             self.text = text
 
 
-        if self.index < len(self.text):
-            current_text = self.text[:self.index + 1]
-            self.canvas.delete("text")
-            self.text_id = self.canvas.create_text(x, y, text=current_text, font=("仿宋", 16, "bold"), fill = color, tags="text")
-            self.index += 1
+            if self.index < len(self.text):
+                current_text = self.text[:self.index + 1]
+                self.canvas.delete(f"{tagger}_text")
+                self.text_id = self.canvas.create_text(x, y, text = current_text, font=("仿宋", 16, "bold"), fill = color, tags = f"{tagger}_text")
+                self.index += 1
 
 
-            with open("work_log.txt", 'a') as file_7:
-                file_7.write(f"current index:{self.index}\ntext index:{len(self.text)}\n\n")
+                with open("work_log.txt", 'a') as file_7:
+                    file_7.write(f"current index:{self.index}\ntext index:{len(self.text)}\n\n")
 
 
-            if self.index == len(self.text):
-                self.index = len(self.text) + 1
-                bool__ = False
+                if self.index == len(self.text):
+                    self.index = len(self.text) + 1
 
 
-            self.root.after(100, lambda: self.typing(True, text, x, y, color))
+                self.root.after(100, lambda: self.typing(tagger, text, x, y, color))
+
+
+        else:
+            return
+
+
+    def going_on_button(self, taggers, function):
+        self.canvas.create_rectangle(self.go_on_button_start_x, self.go_on_button_start_y, self.go_on_button_end_x, self.go_on_button_end_y, fill = "#A6A6F0", outline = "Black", tags = "rect")
+        self.canvas.create_text(self.go_on_text_x, self.go_on_text_y, text="继续", font=("楷体", 25, "bold"), fill = "Black", state=tk.NORMAL, tags = "char")
+        self.canvas.create_rectangle(self.go_on_button_start_x, self.go_on_button_start_y, self.go_on_button_end_x, self.go_on_button_end_y, outline = '', stipple = 'gray50', tags = taggers)
+        self.chapter_one_2_active = True
+        self.canvas.tag_bind(taggers, "<Button-1>", function)
+
 
     def display_background(self, photo_name):
         img = Image.open(photo_name)
@@ -107,11 +144,15 @@ class MainProgramme:
 
         text_x = self.root.winfo_screenwidth() // 2
         text_y = self.root.winfo_screenheight() * 2 // 3
-        self.typing(True, art_1, text_x, text_y, "White")
+        self.index = 0
+        self.typing("start_game", art_1, text_x, text_y, "White")
 
         self.root.after(8000, self.needing_func)
 
     def needing_func(self):
+        self.canvas.delete("start_game_text")
+
+
         self.canvas.create_rectangle(0, 0, self.root.winfo_screenwidth(), self.root.winfo_screenheight(), outline = '', stipple = 'gray50', tag = "go_on_1_PlayerName")
 
 
@@ -121,7 +162,7 @@ class MainProgramme:
         self.canvas.tag_bind("go_on_1_PlayerName", "<Button-1>", lambda e: self.go_on_1_PlayerName())
 
 
-    def on_click_1(self, event):
+    def on_click_1(self):
         self.active = True
         self.canvas.focus_set()
         self.cursor_pos = len(self.input_text_1)
@@ -139,7 +180,7 @@ class MainProgramme:
             self.draw_content()
 
 
-    def on_backspace(self, event):
+    def on_backspace(self):
         if not self.active or self.cursor_pos == 0:
             return
 
@@ -186,8 +227,12 @@ class MainProgramme:
         self.canvas.after(500, self.blink_cursor)
 
 
-    def on_mouse_enter(self, event):
-        self.canvas.config(cursor="xterm")
+    def on_mouse_enter(self):
+        self.canvas.config(cursor = "xterm")
+
+
+    def on_mouse_enter_then(self):
+        self.canvas.config(cursor = "arrow")
 
 
     def go_on_1_PlayerName(self):
@@ -210,10 +255,10 @@ class MainProgramme:
             self.recta_PlayerInfo = self.canvas.create_rectangle(recta_width, recta_height, recta_width + 100, recta_height + 40, fill = "#E6E6FA", outline = "#999")
 
 
-            self.canvas.tag_bind(self.recta_PlayerInfo, "<Button-1>", self.on_click_1)
-            self.canvas.bind_all("<Key>", self.on_key_press)
-            self.canvas.bind_all("<BackSpace>", self.on_backspace)
-            self.canvas.tag_bind(self.recta_PlayerInfo, "<Enter>", self.on_mouse_enter)
+            self.canvas.tag_bind(self.recta_PlayerInfo, "<Button-1>", lambda e: self.on_click_1())
+            self.canvas.bind_all("<Key>", lambda e: self.on_key_press(e))
+            self.canvas.bind_all("<BackSpace>", lambda e: self.on_backspace())
+            self.canvas.tag_bind(self.recta_PlayerInfo, "<Enter>", lambda e: self.on_mouse_enter())
 
 
             StartGameRectaWidth = self.root.winfo_screenwidth() // 3 * 2
@@ -223,8 +268,10 @@ class MainProgramme:
             self.canvas.create_rectangle(StartGameRectaWidth, StartGameRectaHeight, StartGameRectaWidth + 164, StartGameRectaHeight + 64, fill = "#E6E6FA", outline = "Black")
             self.canvas.create_rectangle(StartGameRectaWidth, StartGameRectaHeight, StartGameRectaWidth + 164, StartGameRectaHeight + 64, outline = '', stipple = 'gray50', tag = "StorePlayerInfo")
             self.canvas.create_text(1362, 752, text = "进入第一章", font = ("楷体", 20), fill = "Red", state = tk.NORMAL)
+            self.canvas.tag_raise("StorePlayerInfo")
 
 
+            self.canvas.tag_bind("StorePlayerInfo", "<Enter>", lambda e: self.on_mouse_enter_then())
             self.canvas.tag_bind("StorePlayerInfo", "<Button-1>", lambda e: self.StorePlayerInfo())
 
 
@@ -268,68 +315,136 @@ class MainProgramme:
         self.canvas.create_rectangle(C3W, C3H, C3W + 100, C3H + 60, outline = '', stipple = 'gray50', tag = "EnterChapterThree")
 
 
-        self.canvas.tag_bind("EnterChapterOne", "<Button-1>", lambda e : self.ChapterOne_1())
-        self.canvas.tag_bind("EnterChapterTwo", "<Button-1>", lambda e : self.ChapterTwo_1())
-        self.canvas.tag_bind("EnterChapterThree", "<Button-1>", lambda e : self.ChapterThree_1())
+        self.chapter_one_1_active = True
+        self.chapter_two_1_active = True
+        self.chapter_three_1_active = True
+
+
+        self.canvas.tag_bind("EnterChapterOne", "<Button-1>", lambda e : self.Chapterone_1(self.chapter_one_1_active))
+        self.canvas.tag_bind("EnterChapterTwo", "<Button-1>", lambda e : self.ChapterTwo_1(self.chapter_two_1_active))
+        self.canvas.tag_bind("EnterChapterThree", "<Button-1>", lambda e : self.ChapterThree_1(self.chapter_three_1_active))
 
 
     def StorePlayerInfo(self):
-        with open ("Player_Info.txt", 'w') as file_4:
-            file_4.write(self.input_text_1)
+        if self.input_text_1 != "":
+            print("confirm")
+            print(self.input_text_1)
+            with open ("Player_Info.txt", 'w', encoding = 'utf-8') as file_4:
+                file_4.write(self.input_text_1)
+            self.chapter_one_1_active = True
+            self.root.after(0, lambda e: self.Chapterone_1(self.chapter_one_1_active))
+            self.canvas.delete("cursor")
 
 
-        self.root.after(0, self.ChapterOne_1)
+        else:
+            print("nothing to do")
+            return
 
 
-    def ChapterOne_1(self):
-        self.canvas.delete(tk.ALL)
+    def Chapterone_1(self, active):
+        if active == True:
+            self.canvas.delete(tk.ALL)
+            self.active = False
 
 
-        with open ("work_log.txt", 'a') as file_8:
-            file_8.write("Player_Choose: Chapter One\n\n")
+            with open ("work_log.txt", 'a') as file_8:
+                file_8.write("Player_Choose: Chapter One\n\n")
 
 
-        chapter_1_b1w = self.root.winfo_screenwidth()
-        chapter_1_b1h = self.root.winfo_screenheight() // 3 * 2
-        chapter_1_b1h_end = self.root.winfo_screenheight()
-        self.canvas.create_rectangle(0, chapter_1_b1h, chapter_1_b1w, chapter_1_b1h_end, fill = "#E6E6FA", outline = "Black")
+            self.canvas.create_rectangle(0, self.chapter_blank_h, self.chapter_blank_w, self.chapter_blank_hend, fill = "#E6E6FA", outline = "Black")
 
 
-        with open ("Player_Info.txt", 'w+', encoding = 'utf-8') as file_5:
-            Player_name = file_5.read()
+            with open ("Player_Info.txt", 'r', encoding = 'utf-8') as file_5:
+                Player_name = file_5.read()
             if len(Player_name) > 5:
-                file_5.write("00000")
-        self.canvas.create_rectangle(0, chapter_1_b1h - 50, 100, chapter_1_b1h, fill = "#AAFF00", outline = "Black")
-        self.canvas.create_text(50, chapter_1_b1h - 25, text = f"{Player_name}", font = ("华文行楷", 15), fill = "Black", state = tk.NORMAL)
+                with open ("Player_Info.txt", 'w', encoding = 'utf-8') as file_5:
+                    file_5.write("00000")
+                    Player_name = "00000"
+            self.canvas.create_rectangle(0, self.chapter_blank_h - 50, 100, self.chapter_blank_h, fill = "#AAFF00", outline = "Black")
+            self.canvas.create_text(50, self.chapter_blank_h - 25, text = f"{Player_name}", font = ("华文行楷", 15), fill = "Black", state = tk.NORMAL)
 
 
-        with open("game_item_cp1_1.txt", 'r', encoding = 'utf-8') as file_6:
-            Chapter_1_art_1 = file_6.read()
-        Chapter_1_art_1w = self.root.winfo_screenwidth() // 2
-        Chapter_1_art_1h = self.root.winfo_screenheight() // 3 * 2 + 200
-        self.index = 0
-        self.typing(True, Chapter_1_art_1, Chapter_1_art_1w, Chapter_1_art_1h, "Black")
+            with open("game_item_cp1_1.txt", 'r', encoding = 'utf-8') as file_6:
+                Chapter_1_art_1 = file_6.read()
+            Chapter_1_art_1w = self.root.winfo_screenwidth() // 2
+            Chapter_1_art_1h = self.root.winfo_screenheight() // 3 * 2 + 200
+            self.index = 0
+            self.typing("Chapterone_1", Chapter_1_art_1, Chapter_1_art_1w, Chapter_1_art_1h, "Black")
 
 
-    def ChapterTwo_1(self):
-        with open ("work_log.txt", 'a') as file_9:
-            file_9.write("Player_Choose: Chapter Two\n\n")
+            self.root.after(4000, lambda : self.going_on_button("chapterone_2", lambda e: self.Chapterone_2(True)))
 
 
-    def ChapterThree_1(self):
-        with open ("work_log.txt", 'a') as file_10:
-            file_10.write("Player_Choose: Chapter Three\n\n")
+    def Chapterone_2(self, active):
+        if active == True:
+            self.chapter_one_1_active = False
+            self.canvas.delete("Chapterone_1_text", "chapterone_2", "rect", "char")
 
+
+            with open ("game_item_cp1_2.txt", 'r', encoding = 'utf-8') as file_9:
+                Chapter_1_art_2 = file_9.read()
+            Chapter_1_art_2w = self.root.winfo_screenwidth() // 2
+            Chapter_1_art_2h = self.root.winfo_screenheight() // 3 * 2 + 200
+            self.index = 0
+            self.typing("Chapterone_2", Chapter_1_art_2, Chapter_1_art_2w, Chapter_1_art_2h, "Black")
+
+            self.root.after(1500, lambda : self.going_on_button("chapterone_3", lambda e: self.Chapterone_3(True)))
+
+
+    def Chapterone_3(self, active):
+        if active == True:
+            self.chapter_one_1_active = False
+            self.canvas.delete(tk.ALL)
+
+
+            name_bgp_cp1_1 = "Sainter_woman.png"
+            self.display_background(name_bgp_cp1_1)
+
+
+            self.canvas.create_rectangle(0, self.chapter_blank_h, self.chapter_blank_w, self.chapter_blank_hend, fill="#E6E6FA", outline="Black")
+
+
+            self.canvas.create_rectangle(0, self.chapter_blank_h - 50, 175, self.chapter_blank_h, fill = "#AAFF00", outline = "Black")
+            self.canvas.create_text(87, self.chapter_blank_h - 25, text = f"「圣灵者」高级主持", font = ("华文行楷", 15), fill = "Black", state = tk.NORMAL, tags = "text_chapter_one_3")
+
+
+            with open ("Player_Info.txt", 'r', encoding = 'utf-8') as file_10:
+                Player_name = file_10.read()
+            if len(Player_name) > 5:
+                with open ("Player_Info.txt", 'w', encoding = 'utf-8') as file_11:
+                    file_11.write("00000")
+                    Player_name = "00000"
+            Chapter_1_art_3w = self.root.winfo_screenwidth() // 2
+            Chapter_1_art_3h = self.root.winfo_screenheight() // 3 * 2 + 200
+            self.index = 0
+            self.typing("Chapterone_3", f"你就是{Player_name}？", Chapter_1_art_3w, Chapter_1_art_3h, "Black")
+
+
+            self.root.after(1000, lambda : self.going_on_button("chapterone_4", lambda e: self.Chapterone_4(True)))
+
+
+    def Chapterone_4(self, active):
+        if active == True:
+            pass
+
+
+    def ChapterTwo_1(self, active):
+        if active == True:
+            with open("work_log.txt", 'a') as file_9:
+                file_9.write("Player_Choose: Chapter Two\n\n")
+
+    def ChapterThree_1(self, active):
+        if active == True:
+            with open("work_log.txt", 'a') as file_10:
+                file_10.write("Player_Choose: Chapter Three\n\n")
 
     def end_func(self):
         time_now = datetime.datetime.now()
         current_time = time_now.strftime("%Y-%m-%d %H:%M:%S")
-        
 
-        with open ("work_log.txt", 'a') as file_2:
+        with open("work_log.txt", 'a') as file_2:
             file_2.write(f"End time: {current_time}\n\n\n")
-            
-        
+
         self.root.destroy()
         sys.exit(0)
 
